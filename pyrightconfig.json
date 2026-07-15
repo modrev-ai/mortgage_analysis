@@ -1,0 +1,7 @@
+{
+  "venvPath": "C:\\Users\\jshin\\miniconda3\\envs",
+  "venv": "mortgage_analysis",
+  "extraPaths": [
+    "C:\\Users\\jshin\\miniconda3\\envs\\mortgage_analysis\\Lib\\site-packages"
+  ]
+}
