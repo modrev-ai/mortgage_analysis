@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\jshin\\miniconda3\\envs\\mortgage_analysis\\python.exe",
+    "python.condaPath": "C:\\Users\\jshin\\miniconda3\\Scripts\\conda.exe",
+    "python.analysis.extraPaths": [
+        "C:\\Users\\jshin\\miniconda3\\envs\\mortgage_analysis\\Lib\\site-packages"
+    ]
+}
