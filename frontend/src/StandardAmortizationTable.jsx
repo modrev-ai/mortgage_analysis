@@ -52,26 +52,40 @@ const StandardAmortizationTable = ({
 
             // New balance after this payment
             balance -= totalPrincipalPayment;
+            balance = Math.max(0, balance);
 
             table.push({
                 month: i,
-                beginningBalance: parseFloat(balance.toFixed(2)),
+                beginningBalance: parseFloat((balance + totalPrincipalPayment).toFixed(2)),
                 monthlyPayment: monthlyPIPayment,
                 lumpSum: lumpSumVal,
                 interest: parseFloat(interest.toFixed(2)),
                 principalPayment: parseFloat(totalPrincipalPayment.toFixed(2)),
-                balance: Math.max(0, balance)
+                balance: parseFloat(balance.toFixed(2))
             });
+
+            // Stop if balance is effectively zero (allow small floating point tolerance)
+            if (balance < 0.01) {
+                break;
+            }
         }
 
         return table;
     }, [loanAmount, apr, loanTerm, otherPayments, lumpSums]);
 
-    // Filter to only show rows with payments (exclude fully paid early scenarios)
-    const displayRows = standardTable.filter(row => row.month <= standardTable.length);
+    // Find the payoff month (when balance first reaches 0)
+    const payoffMonth = useMemo(() => {
+        for (const row of standardTable) {
+            if (row.balance === 0) return row.month;
+        }
+        return loanTerm;
+    }, [standardTable, loanTerm]);
 
-    // Check if loan was fully paid early (balance reached 0 before final term)
-    const isFullyPaidEarly = standardTable.some(row => row.balance === 0 && row.month < standardTable.length);
+    // Filter to only show rows up to and including the payoff month
+    const displayRows = standardTable.filter(row => row.month <= payoffMonth);
+
+    // Check if loan was fully paid early (before the full term)
+    const isFullyPaidEarly = payoffMonth < loanTerm;
 
     // Group rows into chunks of GROUP_SIZE for tabs
     const groupedRows = useMemo(() => {
@@ -128,10 +142,10 @@ const StandardAmortizationTable = ({
     const remainingBalance = isFullyPaid ? 0 : parseFloat(lastRow.balance || 0);
 
     // Calculate reduced months count if early payoff occurred
-    const reducedMonths = standardTable.length - displayRows.length;
+    const reducedMonths = loanTerm - payoffMonth;
 
     // Calculate interest saved due to lump sums
-    const interestSaved = Math.max(0, baseTotalInterest - totals.totalInterest);
+    const interestSaved = Math.max(0, parseFloat((baseTotalInterest - totals.totalInterest).toFixed(2)));
 
     return (
         <div>
@@ -168,10 +182,10 @@ const StandardAmortizationTable = ({
                 </div>
 
                 {isFullyPaidEarly && (
-                    <div className="stat-card" style={{ backgroundColor: '#fef0f0', fontSize: '0.85rem' }}>
-                        <span className="stat-title" style={{ fontSize: '0.75rem' }}>Early Payoff Notice</span>
-                        <span className="stat-value highlight" style={{ fontSize: '0.85rem' }}>
-                            Loan paid off {reducedMonths > 0 ? `in ${displayRows.length} months` : 'early'} with {reducedMonths} month(s) saved. Interest saved: ${interestSaved.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <div className="stat-card" style={{ backgroundColor: '#fef0f0', fontSize: '0.78rem' }}>
+                        <span className="stat-title" style={{ fontSize: '0.7rem' }}>Early Payoff Notice</span>
+                        <span className="stat-value highlight" style={{ fontSize: '0.78rem' }}>
+                            Loan paid off in {payoffMonth} months ({reducedMonths} month(s) saved). Interest saved: ${interestSaved.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 )}
@@ -260,7 +274,7 @@ const StandardAmortizationTable = ({
                                         <input
                                             type="range"
                                             min="0"
-                                            max="10000"
+                                            max="100000"
                                             step="100"
                                             value={lumpSums[row.month] || 0}
                                             onChange={(e) => {
