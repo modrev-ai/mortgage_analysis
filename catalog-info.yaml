@@ -2,8 +2,29 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: mortgage-analysis
-  description: A personal analysis of how a mortgage APR is calculated and what additional monthly principal payment is most cost effective.
+  description: A personal loan and mortgage amortization analyser, with a Python simulator and a React web calculator, that finds the most cost effective additional monthly principal or lump sum payment.
+  tags: [python, pandas, matplotlib, jupyter, javascript, react, vite, vitest]
+  annotations:
+    modrev.ai/build: "cd frontend; npm ci; npm run build"
+    modrev.ai/run: "cd frontend; npm run dev (the Python simulator is used from the notebooks in examples/)"
+  links:
+    - url: README.md
+    - url: examples/loan_payment_schedule_mortgage.ipynb
+    - url: examples/loan_payment_schedule_personal_loan.ipynb
 spec:
   type: tool
   lifecycle: experimental
   owner: unassigned
+  features:
+    - Computes the monthly payment and a full amortization schedule from principal, APR and term
+    - Searches a range of additional monthly principal payments and picks the most cost effective one at the knee of the interest-saved curve
+    - Merges the standard schedule and the optimal overpayment schedule into one table for side-by-side comparison
+    - Simulates a one-time lump sum payment at a chosen month and finds the month where it saves the most
+    - The web calculator takes loan amount, APR and term through inputs and sliders and shows the principal and interest schedule with editable lump sums and early payoff
+    - Notebooks walk through a personal loan simulation and a mortgage early payment simulation
+    - The README notes real estate underwriting criteria such as cap rate, the operating-expense rule of thumb, cash on cash return and debt coverage ratio
+  subcomponents:
+    - src/loan_sim.py - the LoanCalc simulator (pandas, matplotlib, kneed) and its tests
+    - frontend/src/mortgageCalc.js - the browser port of the loan calculations, with vitest tests
+    - frontend/src - the React app, loan form, amortization tables and summary stats
+    - examples/ - the Jupyter notebooks
