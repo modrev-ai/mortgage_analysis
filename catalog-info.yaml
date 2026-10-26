@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mortgage-analysis
+  description: A personal analysis of how a mortgage APR is calculated and what additional monthly principal payment is most cost effective.
+spec:
+  type: tool
+  lifecycle: experimental
+  owner: unassigned
